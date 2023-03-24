@@ -105,7 +105,7 @@ class Model:
 
         X = torch.tensor(X)
         Y = torch.tensor(Y)
-        print(X.shape, Y.shape)
+        # print(X.shape, Y.shape)
         return X, Y
 
     @torch.no_grad()
@@ -116,34 +116,34 @@ class Model:
         for layer in self.layers:
             x = layer(x)
         loss = F.cross_entropy(x, y)
-        print(loss, loss.item())
+        # print(loss, loss.item())
         return loss.item()
 
     def _initialize(self, neurons_per_layer=None, n_hidden = 100):
         # words = open("names.txt", "r").read().splitlines()
         
-        print("I am here")
+        # print("I am here")
         chars = sorted(list(set(''.join(self.words))))
-        print(chars)
+        # print(chars)
         self.stoi = {s: i+1 for i, s in enumerate(chars)}
         self.stoi["."] = 0
         self.itos = {i: s for s, i in self.stoi.items()}
         vocab_size = len(self.itos)
 
-        print(self.block_size, self.n_embd)
+        # print(self.block_size, self.n_embd)
         random.seed(42)
         random.shuffle(self.words)
-        print('stoi: ', self.stoi)
+        # print('stoi: ', self.stoi)
         n1 = int(0.8 * len(self.words))
         n2 = int(0.9 * len(self.words))
-        print("after vocab_sizes")
+        # print("after vocab_sizes")
         self.Xtr, self.Ytr = self._build_dataset(self.words[:n1])
         self.Xval, self.Yval = self._build_dataset(self.words[n1:n2])
         self.Xtest, self.Ytest = self._build_dataset(self.words[n2:])
-        print("after 3")
+        # print("after 3")
         # Let's train a deeper network
         self.C = torch.randn((vocab_size, self.n_embd), generator=self.g)
-        print('layers before: ', neurons_per_layer)
+        # print('layers before: ', neurons_per_layer)
         if neurons_per_layer:
             self.layers = []
             neuronsBefore = self.n_embd * self.block_size
@@ -163,7 +163,7 @@ class Model:
                 Linear(           n_hidden, n_hidden, bias=False, generator=self.g), BatchNorm1d(n_hidden), Tanh(),
                 Linear(           n_hidden, vocab_size, bias=False, generator=self.g), BatchNorm1d(vocab_size),
                 ]
-        print("layers after: ", self.layers)
+        # print("layers after: ", self.layers)
 
         with torch.no_grad():
             # last layer: make less confident
@@ -175,13 +175,13 @@ class Model:
                     layer.weight *= 1.0 #5/3
         
         self.parameters = [self.C] + [p for layer in self.layers for p in layer.parameters()]
-        print(sum(p.nelement() for p in self.parameters)) # number of parameters in total
+        # print(sum(p.nelement() for p in self.parameters)) # number of parameters in total
         for p in self.parameters:
             p.requires_grad = True
 
     def neural_network_train(self, words, block_size, neurons_per_layer=None, n_embd = 10, n_hidden = 100,max_steps = 1000, batch_size = 32):
         # self.g = torch.Generator().manual_seed(2147483647) # for reproducibility
-        print('params: ', block_size, n_embd, max_steps, batch_size)
+        # print('params: ', block_size, n_embd, max_steps, batch_size)
         if words!=None:
             self.words = words
         if block_size!=None:
@@ -193,7 +193,7 @@ class Model:
         if max_steps!=None:
             self.max_steps = max_steps
         self._initialize(neurons_per_layer=neurons_per_layer, n_hidden = n_hidden)
-        print('after init')
+        # print('after init')
         for i in range(self.max_steps):
             # minibatch construct
             ix = torch.randint(0, self.Xtr.shape[0], (self.batch_size,), generator=self.g)
@@ -218,8 +218,8 @@ class Model:
                 p.data += -lr * p.grad
 
             # track stats
-            if i % 10000 == 0: # print every once in a while
-                print(f'{i:7d}/{self.max_steps:7d}: {loss.item():.4f}')
+            # if i % 10000 == 0: # print every once in a while
+            #     print(f'{i:7d}/{self.max_steps:7d}: {loss.item():.4f}')
             self.lossi.append(loss.log10().item())
             with torch.no_grad():
                 self.ud.append([((lr*p.grad).std() / p.data.std()).log10().item() for p in self.parameters])
@@ -261,7 +261,7 @@ class Model:
                 # if we sample the special '.' token, break
                 if ix == 0:
                     break
-            print(''.join(self.itos[i] for i in out))
+            # print(''.join(self.itos[i] for i in out))
             result = result + ''.join(self.itos[i] for i in out) + '\n'  
         return result
     
@@ -269,5 +269,5 @@ class Model:
         model_name = "files/model" + generateId()+".pickle"
         with open(model_name, "wb") as f:
             pickle.dump({"C": self.C, "layers": self.layers, "itos": self.itos, "block_size": self.block_size}, f)
-        print('saved!')
+        # print('saved!')
         return model_name

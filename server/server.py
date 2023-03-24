@@ -80,7 +80,7 @@ def predict():
             data = request.json['data']
             with open(data, 'rb') as f:
                 model = pickle.load(f)
-            print(model)
+            # print(model)
             C  = model["C"]
             layers = model["layers"]
             itos = model['itos']
@@ -96,4 +96,4 @@ def predict():
         return "500 Internal Server Error: Oops, something went wrong. We're sorry, but our system encountered an unexpected error that prevented us from fulfilling your request. You did nothing wrong, and we're working to resolve the issue as quickly as possible. Please retry the request in a few minutes or contact our website administrator if the issue persists. Thank you for your patience.", 500
 
 if __name__ == '__main__':
-    app.run(port=8080)
+    app.run()
