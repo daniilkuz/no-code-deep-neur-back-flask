@@ -1,0 +1,8 @@
+venv
+server/files/
+server/__pycache__
+/server/train1.py
+/server/process_file.py
+
+Dockerfile
+.dockerignore
